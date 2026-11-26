@@ -1,0 +1,9 @@
+/* Shared VS Code inspired syntax palette */
+pre.vsc-block{background:#1e1e1e!important;color:#d4d4d4!important;border:1px solid #353535!important;border-radius:9px!important;padding:14px 16px!important;overflow:auto!important;font:15px/1.7 Consolas,Menlo,Monaco,ui-monospace,monospace!important;tab-size:4;white-space:pre;text-align:left}
+pre.vsc-block code{color:inherit!important;background:transparent!important;border:0!important;padding:0!important;font:inherit!important;white-space:pre!important}
+.vsc-key{color:#569cd6!important}.vsc-flow{color:#c586c0!important}.vsc-type{color:#4ec9b0!important}.vsc-fn{color:#dcdcaa!important}.vsc-num{color:#b5cea8!important}.vsc-str{color:#ce9178!important}.vsc-comment{color:#8eae78!important}.vsc-var{color:#9cdcfe!important}.vsc-op{color:#d4d4d4!important}
+.vsc-editor{position:relative;min-width:0;background:#1e1e1e;border-radius:8px;overflow:hidden}
+.vsc-editor pre.vsc-block{position:absolute;inset:0;margin:0!important;pointer-events:none;border:0!important;border-radius:0!important;padding:16px!important;font:16px/1.65 ui-monospace,Menlo,monospace!important;overflow:hidden!important}
+.vsc-editor textarea{position:relative;display:block;background:transparent!important;color:transparent!important;caret-color:#fff!important;-webkit-text-fill-color:transparent;outline:none;z-index:1;font:16px/1.65 ui-monospace,Menlo,monospace!important;padding:16px!important;tab-size:4;white-space:pre;overflow:auto;letter-spacing:normal}
+.vsc-editor textarea::selection{background:#4477aa66;-webkit-text-fill-color:transparent}
+@media(max-width:500px){pre.vsc-block{font-size:13px!important}.vsc-editor pre.vsc-block,.vsc-editor textarea{font-size:16px!important}}
