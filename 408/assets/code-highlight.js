@@ -1,0 +1,14 @@
+(()=>{"use strict";
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const flow=new Set("if else for while do switch case default break continue return goto throw try catch".split(" "));
+const types=new Set("LNode NODE LinkList ListNode size_t uint32_t int32_t FILE bool string".split(" "));
+const keys=new Set("int char float double void long short signed unsigned const static extern volatile register typedef struct union enum sizeof inline class public private protected new delete namespace using template true false NULL nullptr auto include define".split(" "));
+const token=/(\/\/[^\n]*|\/\*[\s\S]*?(?:\*\/|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|#[ \t]*[a-zA-Z_]+|\b(?:0[xX][0-9a-fA-F]+|0[bB][01]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)[uUlLfF]*\b|[a-zA-Z_]\w*|->|==|!=|<=|>=|\+\+|--|&&|\|\||[+\-*/%=<>!&|^~?:])/g;
+function paint(src){let result="",last=0;token.lastIndex=0;for(const m of src.matchAll(token)){const t=m[0],i=m.index;result+=esc(src.slice(last,i));let k;if(t.startsWith("//")||t.startsWith("/*"))k="comment";else if(t[0]==='"'||t[0]==="'")k="str";else if(/^\d/.test(t))k="num";else if(t[0]==="#"||keys.has(t))k="key";else if(flow.has(t))k="flow";else if(types.has(t))k="type";else if(/^[a-zA-Z_]/.test(t))k=/^\s*\(/.test(src.slice(i+t.length))?"fn":"var";else k="op";result+='<span class="vsc-'+k+'">'+esc(t)+'</span>';last=i+t.length}return result+esc(src.slice(last))}
+function init(){document.querySelectorAll("pre").forEach(pre=>{if(pre.closest(".vsc-editor")||pre.dataset.vscDone)return;const code=pre.querySelector("code")||pre;const src=code.textContent;pre.classList.add("vsc-block");pre.dataset.vscDone="1";code.innerHTML=paint(src)});
+const ta=document.querySelector("textarea#code");if(!ta||ta.closest(".vsc-editor"))return;
+const wrap=document.createElement("div"),back=document.createElement("pre");wrap.className="vsc-editor";back.className="vsc-block";back.setAttribute("aria-hidden","true");ta.before(wrap);wrap.append(back,ta);
+let previous=null;function sync(){if(previous!==ta.value){previous=ta.value;back.innerHTML=paint(previous)+"\n"}back.scrollTop=ta.scrollTop;back.scrollLeft=ta.scrollLeft}
+ta.addEventListener("input",sync);ta.addEventListener("scroll",sync);document.addEventListener("click",()=>requestAnimationFrame(sync));document.addEventListener("keydown",()=>requestAnimationFrame(sync));document.addEventListener("change",()=>requestAnimationFrame(sync));window.addEventListener("resize",sync);setInterval(sync,300);sync()}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
