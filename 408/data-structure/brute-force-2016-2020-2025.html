@@ -1,0 +1,77 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>408 真题 · 暴力算法与手工推演</title><style>*{box-sizing:border-box}body{margin:0;background:#f3f6f5;color:#203b35;font:16px/1.65 system-ui,-apple-system,sans-serif}nav{position:sticky;top:0;background:white;border-bottom:1px solid #dbe5df;padding:12px 16px;display:flex;flex-wrap:wrap;gap:15px;z-index:2}a{color:#176458}main{max-width:1000px;margin:auto;padding:18px}section{background:white;border:1px solid #dbe5df;border-radius:12px;padding:clamp(12px,3vw,24px);margin:16px 0;scroll-margin-top:100px}h1{font-size:28px}h2{font-size:22px}h3{font-size:17px;margin-bottom:6px}pre{background:#edf3f0;padding:14px;border-radius:8px;overflow:auto;font:14px/1.55 ui-monospace,monospace;tab-size:4}table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid #dbe5df;padding:7px;text-align:left}.arr{display:flex;flex-wrap:wrap;gap:4px;margin:10px 0}.arr span{min-width:38px;text-align:center;padding:7px;border-radius:5px;background:#e0ecfa}.arr .right{background:#f9e6c9}.note{border-left:3px solid #a56a26;padding-left:12px}.scroll{overflow:auto}button,input{font:inherit}small{color:#63756d}</style></head><body><nav><a href="../">408 首页</a><a href="#y2016">2016 · 集合划分</a><a href="#y2020">2020 · 三元组</a><a href="#y2025">2025 · 最大乘积</a></nav><main><small>2026-11-26 · 对话复习记录</small><h1>数据结构真题：暴力解与手工推演</h1><p>优先掌握可独立手写的基础算法；仅收录主动提出的优化思路。手工推演为对话与草稿的文字重绘，不是原照片。</p>
+<section id="y2016"><h2>2016 年 43 题 · 集合划分</h2><p>将 n 个正整数划分成两个不相交且覆盖全集的集合，使元素个数差最小、元素和差最大。</p><h3>原始思路</h3><p>快速排序得到升序序列，前 n/2 个元素求和 S1，剩下元素求和 S2，返回 S2-S1。奇数时多出的元素放在较大集合；正数条件保证这样不会缩小最大差。固定较小集合大小时，选最小的元素使其和最小。</p><h3>手工推演</h3><p>原序列：8, 3, 9, 2, 7, 1, 5；排序后 n/2=3：</p><div class="arr"><span>1</span><span>2</span><span>3</span><span class="right">5</span><span class="right">7</span><span class="right">8</span><span class="right">9</span></div><p>S1=6，S2=29，个数差=1，和差=23。</p><pre><code>int PartitionSet(int A[], int n) {
+    QuickSort(A, 0, n-1); // 使用下方快速排序
+    int S1=0, S2=0;
+    for(int i=0;i&lt;n/2;i++) S1+=A[i];
+    for(int i=n/2;i&lt;n;i++) S2+=A[i];
+    return S2-S1;
+}</code></pre><p>平均时间 O(n log n)，平均辅助空间 O(log n)；最坏时间 O(n²)，最坏递归空间 O(n)。也可以用冒泡排序替代，时间 O(n²)，空间 O(1)。</p><pre><code>// 冒泡排序替代 QuickSort 调用
+for(int i=0;i&lt;n-1;i++)
+    for(int j=0;j&lt;n-1-i;j++)
+        if(A[j]&gt;A[j+1]){
+            int t=A[j]; A[j]=A[j+1]; A[j+1]=t;
+        }</code></pre><h3>主动提出的优化：基准值找得好，一次划分就够</h3><p>不要求集合内部有序，只要求分界位置 k=n/2 正确。单趟划分返回基准值下标 p，若 p=k 即结束，否则仅处理含 k 的一侧。</p><div class="arr"><span>1</span><span>3</span><span>2</span><span class="right">7</span><span class="right">5</span><span class="right">8</span><span class="right">9</span></div><p>例如第一次基准值为 8，划分结果可为 [1,3,5,2,7,8,9]，p=5，只处理下标 0~4；下一次选 5，结果可为 [1,3,2,5,7,8,9]，p=3，结束。以上为满足划分性质的示意序列，不限定具体交换轨迹。</p><pre><code>int Partition(int A[], int low, int high) {
+    int pivot=A[low];
+    while(low&lt;high){
+        while(low&lt;high &amp;&amp; A[high]&gt;=pivot) high--;
+        A[low]=A[high];
+        while(low&lt;high &amp;&amp; A[low]&lt;=pivot) low++;
+        A[high]=A[low];
+    }
+    A[low]=pivot;
+    return low;
+}
+void QuickSort(int A[],int low,int high){
+    if(low&lt;high){
+        int p=Partition(A,low,high);
+        QuickSort(A,low,p-1);
+        QuickSort(A,p+1,high);
+    }
+}
+void QuickSelect(int A[],int low,int high,int k){
+    while(low&lt;high){
+        int p=Partition(A,low,high);
+        if(p==k) return;
+        if(p&gt;k) high=p-1;
+        else low=p+1;
+    }
+}
+// 将 PartitionSet 中 QuickSort 调用替换为：
+// QuickSelect(A,0,n-1,n/2);</code></pre><p>最好 O(n)，随机基准值或随机输入下平均 O(n)，最坏 O(n²)，迭代辅助空间 O(1)。</p></section>
+<section id="y2020"><h2>2020 年 41 题 · 三元组最小距离</h2><p>D=|a-b|+|b-c|+|c-a|。三个非空升序整数数组各取一个元素，求所有三元组中的最小距离。按题给样例处理整数（含负数、零）。</p><h3>原始手写思路</h3><p>三层 for 循环分别枚举 i、j、k；结果数组 R[4] 记录 [最小距离,i,j,k]。每次计算距离并比较，若更小则同时更新四项。</p><div class="arr"><span>−1</span><span>0</span><span>9</span></div><div class="arr"><span>−25</span><span>−10</span><span>10</span><span>11</span></div><div class="arr"><span>2</span><span>9</span><span>17</span><span>30</span><span>41</span></div>
+<h3>手工遍历（共 60 次）</h3><div id="trace"></div><input id="step" type="range" min="0" max="59" value="0" style="width:100%"><p><button id="prev">上一步</button> <button id="next">下一步</button> <button id="last">最终结果</button></p><p>最终 R=[2,2,2,1]，三元组 (9,10,9)，距离 2。</p><h3>修正后的代码</h3><pre><code>#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+void MinDistance(int S1[],int S2[],int S3[],
+                 int n1,int n2,int n3){
+    int R[4]={abs(S1[0]-S2[0])+abs(S2[0]-S3[0])
+              +abs(S3[0]-S1[0]),0,0,0};
+    for(int i=0;i&lt;n1;i++)
+        for(int j=0;j&lt;n2;j++)
+            for(int k=0;k&lt;n3;k++){
+                int d=abs(S1[i]-S2[j])+abs(S2[j]-S3[k])
+                     +abs(S3[k]-S1[i]);
+                if(d&lt;R[0]){
+                    R[0]=d; R[1]=i; R[2]=j; R[3]=k;
+                }
+            }
+    printf("%d",R[0]);
+}</code></pre><p class="note">纠错：初始化最小距离及下标；for 的三个表达式用分号隔开；输出结果。若仅要求距离，可只维护一个 minD 变量，无需记录下标。</p><p>时间 O(n1·n2·n3)，等长时 O(n³)；辅助空间 O(1)。</p></section>
+<section id="y2025"><h2>2025 年 41 题 · 后缀最大乘积</h2><p>对每个 i，求 A[i] 与 A[j] 的最大乘积，限制 i≤j&lt;n，保存至 res[i]。</p><h3>原始手写思路</h3><p>外层枚举 i，内层从 i 开始扫描后缀。若 A[i]≥0，找后缀最大值；若 A[i]&lt;0，找后缀最小值，然后相乘。</p><div class="scroll"><table><tr><th>i</th><th>后缀</th><th>选取</th><th>res[i]</th></tr><tr><td>0</td><td>1,4,-9,6</td><td>最大 6</td><td>6</td></tr><tr><td>1</td><td>4,-9,6</td><td>最大 6</td><td>24</td></tr><tr><td>2</td><td>-9,6</td><td>最小 -9</td><td>81</td></tr><tr><td>3</td><td>6</td><td>最大 6</td><td>36</td></tr></table></div><p class="note">关键纠错：max/min 必须在每轮 i 开始时重置为 A[i]。例如 [8,3,2] 若不重置，后缀最大值会错误地一直保留 8。内层 j 从 i 开始（若已用 A[i] 初始化，也可从 i+1 开始）。</p><pre><code>void CalMulMax(int A[],int res[],int n){
+    for(int i=0;i&lt;n;i++){
+        int max=A[i], min=A[i];
+        for(int j=i;j&lt;n;j++){
+            if(A[i]&gt;=0 &amp;&amp; A[j]&gt;max) max=A[j];
+            else if(A[i]&lt;0 &amp;&amp; A[j]&lt;min) min=A[j];
+        }
+        if(A[i]&gt;=0) res[i]=A[i]*max;
+        else res[i]=A[i]*min;
+    }
+}</code></pre><h3>更容易手写的暴力版本：直接比较乘积</h3><pre><code>void CalMulMax(int A[],int res[],int n){
+    for(int i=0;i&lt;n;i++){
+        res[i]=A[i]*A[i];
+        for(int j=i+1;j&lt;n;j++){
+            int temp=A[i]*A[j];
+            if(temp&gt;res[i]) res[i]=temp;
+        }
+    }
+}</code></pre><p>两个版本均为时间 O(n²)，辅助空间 O(1)。无需排序，否则会改变原下标对应的后缀范围。</p></section><p>说明：代码沿用考试常见的整数计算不溢出假设。暴力版本保证枚举正确，但题目要求尽可能高效，可能扣效率分。</p></main><script>const a=[-1,0,9],b=[-25,-10,10,11],c=[2,9,17,30,41],t=[];let best=Infinity,R;for(let i=0;i<a.length;i++)for(let j=0;j<b.length;j++)for(let k=0;k<c.length;k++){let d=Math.abs(a[i]-b[j])+Math.abs(b[j]-c[k])+Math.abs(c[k]-a[i]);if(d<best){best=d;R=[d,i,j,k]}t.push({i,j,k,d,R:R.slice()})}const s=document.getElementById('step');function draw(){let x=t[+s.value];document.getElementById('trace').textContent='第 '+(+s.value+1)+'/60 次：i='+x.i+'，j='+x.j+'，k='+x.k+'；三元组 ('+a[x.i]+','+b[x.j]+','+c[x.k]+')；D='+x.d+'；R=['+x.R.join(', ')+']'}s.oninput=draw;document.getElementById('prev').onclick=()=>{s.value=+s.value-1;draw()};document.getElementById('next').onclick=()=>{s.value=+s.value+1;draw()};document.getElementById('last').onclick=()=>{s.value=59;draw()};draw();</script></body></html>
